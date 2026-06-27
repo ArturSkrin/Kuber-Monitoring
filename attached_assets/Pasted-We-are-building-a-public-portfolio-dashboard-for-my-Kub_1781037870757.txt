@@ -1,0 +1,327 @@
+We are building a public portfolio dashboard for my Kubernetes homelab.
+
+The app will be deployed inside my own Kubernetes cluster using ArgoCD, not hosted on Replit.
+
+Goal:
+Create a modern portfolio dashboard that shows the current status of my Kubernetes homelab, public services, GitOps apps, metrics, and observability stack.
+
+Important security rules:
+- Do NOT expose Kubernetes API publicly.
+- Do NOT expose Prometheus publicly.
+- Do NOT expose Grafana publicly.
+- Do NOT expose ArgoCD publicly.
+- Do NOT expose Loki publicly.
+- Browser/frontend must never call Kubernetes/Prometheus/ArgoCD/Loki directly.
+- Frontend must call only our own backend API.
+- Backend API must expose only sanitized read-only data.
+- Do not show secrets, env vars, tokens, pod logs with sensitive data, internal IPs unless explicitly allowed.
+- The backend will run inside Kubernetes with a read-only ServiceAccount.
+
+Target public URL:
+portfolio.skrin.pp.ua
+
+Existing public app:
+evetools.skrin.pp.ua
+
+Current infrastructure:
+- Proxmox VE
+- Ubuntu 22.04 VMs
+- Raspberry Pi running Cloudflare Tunnel
+- MikroTik router
+- Cloudflare DNS
+- Cloudflare Tunnel
+- Kubernetes v1.30.14 via kubeadm
+- containerd
+- Cilium CNI
+- MetalLB
+- ingress-nginx
+- cert-manager
+- ArgoCD
+- GitHub Actions
+- GHCR
+- Prometheus
+- Grafana
+- Alertmanager
+- kube-state-metrics
+- node-exporter
+- Metrics Server
+- Loki
+- Grafana Alloy
+
+Kubernetes architecture:
+Internet
+  -> Cloudflare
+  -> Cloudflare Tunnel on Raspberry Pi
+  -> Kubernetes ingress-nginx LoadBalancer IP 192.168.11.30
+  -> portfolio app inside Kubernetes
+
+Local/private services:
+- grafana.lab
+- argocd.lab
+These must remain private.
+
+Public services:
+- evetools.skrin.pp.ua
+- portfolio.skrin.pp.ua
+
+Backend data sources inside Kubernetes:
+
+1. Kubernetes API
+Use in-cluster Kubernetes API:
+https://kubernetes.default.svc
+
+The backend should use the mounted ServiceAccount token:
+/var/run/secrets/kubernetes.io/serviceaccount/token
+
+And CA cert:
+/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+Use Kubernetes API to collect:
+- nodes
+- namespaces
+- pods
+- deployments
+- services
+- ingresses
+- pod status counts
+- restart counts
+- deployment readiness
+- ingress hosts
+- Kubernetes version if possible
+
+Required backend endpoints:
+GET /api/cluster/summary
+GET /api/nodes
+GET /api/namespaces
+GET /api/workloads
+GET /api/public-services
+GET /api/deployments/recent
+
+2. Prometheus API
+Prometheus is installed via kube-prometheus-stack in namespace monitoring.
+
+Likely internal service URL:
+http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+
+Use Prometheus HTTP API:
+GET /api/v1/query?query=<PROMQL>
+
+Useful PromQL queries:
+
+Cluster CPU usage:
+sum(rate(container_cpu_usage_seconds_total{container!="",pod!=""}[5m]))
+
+Node CPU usage:
+sum by (node) (rate(node_cpu_seconds_total{mode!="idle"}[5m]))
+
+Node memory usage:
+(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100
+
+Pods by phase:
+sum by (phase) (kube_pod_status_phase)
+
+Deployments desired replicas:
+sum(kube_deployment_spec_replicas)
+
+Deployments available replicas:
+sum(kube_deployment_status_replicas_available)
+
+Node readiness:
+kube_node_status_condition{condition="Ready",status="true"}
+
+Pod restarts:
+sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total[24h]))
+
+Required backend endpoints:
+GET /api/metrics/cluster
+GET /api/metrics/nodes
+GET /api/metrics/pods
+GET /api/metrics/restarts
+
+3. ArgoCD API
+ArgoCD is installed in namespace argocd.
+
+Likely internal service:
+argocd-server.argocd.svc.cluster.local
+
+Try internal URL:
+https://argocd-server.argocd.svc.cluster.local
+
+For first version, do not require ArgoCD API auth unless needed.
+Alternative: read ArgoCD Application CRDs directly from Kubernetes API:
+Group: argoproj.io
+Version: v1alpha1
+Resource: applications
+Namespace: argocd
+
+Collect:
+- application name
+- sync status
+- health status
+- repo URL
+- target revision
+- destination namespace
+- last sync time if available
+
+Required backend endpoint:
+GET /api/argocd/apps
+
+Expected current ArgoCD app:
+- eve-online-tools
+
+4. Loki API
+Loki is installed in namespace logging.
+
+Internal service URL:
+http://loki-gateway.logging.svc.cluster.local
+
+Use Loki HTTP API:
+GET /loki/api/v1/query_range
+
+Example LogQL:
+{namespace="eve"}
+{namespace=~"eve|argocd|monitoring|logging"} |= "error"
+
+For public dashboard, do not expose raw logs by default.
+Only show sanitized summary:
+- recent error count
+- namespaces with recent errors
+- top pods with errors
+- last few sanitized error messages if safe
+
+Required backend endpoint:
+GET /api/logs/summary
+
+5. Public services health checks
+Backend should check public service availability from inside cluster or via HTTPS:
+- https://evetools.skrin.pp.ua
+- https://portfolio.skrin.pp.ua
+
+Required endpoint:
+GET /api/public-services
+
+Response example:
+[
+  {
+    "name": "Eve Online Tools",
+    "url": "https://evetools.skrin.pp.ua",
+    "status": "up",
+    "httpStatus": 200,
+    "latencyMs": 123
+  }
+]
+
+Frontend requirements:
+- Modern dark DevOps-style dashboard
+- Clean portfolio look
+- Responsive design
+- Show cards:
+  - Cluster status
+  - Nodes Ready
+  - Pods Running / Pending / Failed
+  - CPU usage
+  - Memory usage
+  - Public services status
+  - ArgoCD apps sync/health
+  - Recent deployments
+  - Observability stack status
+- Add section explaining stack:
+  - Kubernetes
+  - Cilium
+  - MetalLB
+  - ingress-nginx
+  - cert-manager
+  - ArgoCD
+  - Prometheus
+  - Grafana
+  - Loki
+  - Alloy
+  - Cloudflare Tunnel
+
+Recommended tech stack:
+Frontend:
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui if available
+- Recharts for charts
+
+Backend:
+- Node.js
+- TypeScript
+- Express or Fastify
+- Kubernetes client library for Node.js
+- Prometheus HTTP API via fetch/axios
+- Loki HTTP API via fetch/axios
+
+Deployment:
+The project must include Kubernetes manifests under k8s/:
+- namespace
+- serviceaccount
+- clusterrole readonly
+- clusterrolebinding
+- deployment
+- service
+- ingress
+- optional configmap
+
+The backend and frontend can be either:
+Option A:
+- one container serving both frontend static files and API
+
+Option B:
+- frontend container
+- backend container
+
+Prefer Option A for simplicity.
+
+Container:
+- Dockerfile
+- production build
+- app listens on port 3000
+
+Kubernetes namespace:
+portfolio
+
+Ingress host:
+portfolio.skrin.pp.ua
+
+Ingress class:
+nginx
+
+TLS:
+Use cert-manager annotation:
+cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+
+TLS secret:
+portfolio-tls
+
+Ingress should route:
+portfolio.skrin.pp.ua -> portfolio service port 80/3000
+
+Important:
+Do not hardcode sensitive tokens.
+Do not require kubeconfig.
+Use in-cluster ServiceAccount auth.
+Use environment variables for service URLs:
+
+PROMETHEUS_URL=http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+LOKI_URL=http://loki-gateway.logging.svc.cluster.local
+ARGOCD_NAMESPACE=argocd
+PUBLIC_EVE_URL=https://evetools.skrin.pp.ua
+PUBLIC_PORTFOLIO_URL=https://portfolio.skrin.pp.ua
+
+If service names differ, make them configurable via env vars.
+
+First milestone:
+Build a working dashboard with mocked fallback data if APIs are unavailable, but implement real backend integrations for Kubernetes API and Prometheus first.
+
+Second milestone:
+Add ArgoCD Application CRD integration.
+
+Third milestone:
+Add Loki error summary.
+
+Fourth milestone:
+Add Kubernetes manifests and Dockerfile ready for ArgoCD deployment.

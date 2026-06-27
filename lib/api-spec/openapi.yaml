@@ -1,0 +1,519 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Kubernetes Homelab Portfolio Dashboard API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: cluster
+    description: Kubernetes cluster data
+  - name: metrics
+    description: Prometheus metrics
+  - name: argocd
+    description: ArgoCD GitOps apps
+  - name: logs
+    description: Loki log summaries
+  - name: services
+    description: Public service health checks
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /cluster/summary:
+    get:
+      operationId: getClusterSummary
+      tags: [cluster]
+      summary: Cluster summary
+      description: High-level cluster status overview
+      responses:
+        "200":
+          description: Cluster summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterSummary"
+
+  /nodes:
+    get:
+      operationId: getNodes
+      tags: [cluster]
+      summary: Kubernetes nodes
+      description: List of all cluster nodes and their status
+      responses:
+        "200":
+          description: List of nodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NodeInfo"
+
+  /namespaces:
+    get:
+      operationId: getNamespaces
+      tags: [cluster]
+      summary: Kubernetes namespaces
+      description: List of all namespaces with pod counts
+      responses:
+        "200":
+          description: List of namespaces
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NamespaceInfo"
+
+  /workloads:
+    get:
+      operationId: getWorkloads
+      tags: [cluster]
+      summary: Kubernetes workloads
+      description: Pods and deployments across namespaces
+      responses:
+        "200":
+          description: Workloads summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkloadsSummary"
+
+  /deployments/recent:
+    get:
+      operationId: getRecentDeployments
+      tags: [cluster]
+      summary: Recent deployments
+      description: Recently updated deployments with readiness status
+      responses:
+        "200":
+          description: List of recent deployments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeploymentInfo"
+
+  /public-services:
+    get:
+      operationId: getPublicServices
+      tags: [services]
+      summary: Public service health
+      description: Health check results for public-facing services
+      responses:
+        "200":
+          description: List of public services with health status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServiceHealth"
+
+  /metrics/cluster:
+    get:
+      operationId: getClusterMetrics
+      tags: [metrics]
+      summary: Cluster-level metrics
+      description: CPU and memory usage for the whole cluster from Prometheus
+      responses:
+        "200":
+          description: Cluster metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterMetrics"
+
+  /metrics/nodes:
+    get:
+      operationId: getNodeMetrics
+      tags: [metrics]
+      summary: Per-node metrics
+      description: CPU and memory usage per node from Prometheus
+      responses:
+        "200":
+          description: Node metrics list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NodeMetrics"
+
+  /metrics/pods:
+    get:
+      operationId: getPodMetrics
+      tags: [metrics]
+      summary: Pod phase metrics
+      description: Pods grouped by phase from Prometheus
+      responses:
+        "200":
+          description: Pod phase breakdown
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PodPhaseMetrics"
+
+  /metrics/restarts:
+    get:
+      operationId: getPodRestarts
+      tags: [metrics]
+      summary: Pod restart counts
+      description: Top pods with restarts in the last 24h from Prometheus
+      responses:
+        "200":
+          description: List of pods with restart counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PodRestartInfo"
+
+  /argocd/apps:
+    get:
+      operationId: getArgoCdApps
+      tags: [argocd]
+      summary: ArgoCD applications
+      description: GitOps applications with sync and health status
+      responses:
+        "200":
+          description: List of ArgoCD applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArgoCdApp"
+
+  /logs/summary:
+    get:
+      operationId: getLogsSummary
+      tags: [logs]
+      summary: Loki logs summary
+      description: Sanitized error summary from Loki — counts only, no raw logs
+      responses:
+        "200":
+          description: Log summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogsSummary"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ClusterSummary:
+      type: object
+      required:
+        - kubernetesVersion
+        - nodeCount
+        - nodeReadyCount
+        - namespaceCount
+        - podTotal
+        - podRunning
+        - podPending
+        - podFailed
+        - deploymentTotal
+        - deploymentReady
+      properties:
+        kubernetesVersion:
+          type: string
+        nodeCount:
+          type: integer
+        nodeReadyCount:
+          type: integer
+        namespaceCount:
+          type: integer
+        podTotal:
+          type: integer
+        podRunning:
+          type: integer
+        podPending:
+          type: integer
+        podFailed:
+          type: integer
+        deploymentTotal:
+          type: integer
+        deploymentReady:
+          type: integer
+
+    NodeInfo:
+      type: object
+      required:
+        - name
+        - status
+        - roles
+        - kubeletVersion
+        - osImage
+        - cpu
+        - memory
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        kubeletVersion:
+          type: string
+        osImage:
+          type: string
+        cpu:
+          type: string
+        memory:
+          type: string
+        createdAt:
+          type: ["string", "null"]
+
+    NamespaceInfo:
+      type: object
+      required:
+        - name
+        - status
+        - podCount
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        podCount:
+          type: integer
+        createdAt:
+          type: ["string", "null"]
+
+    WorkloadsSummary:
+      type: object
+      required:
+        - pods
+        - deployments
+      properties:
+        pods:
+          type: array
+          items:
+            $ref: "#/components/schemas/PodInfo"
+        deployments:
+          type: array
+          items:
+            $ref: "#/components/schemas/DeploymentInfo"
+
+    PodInfo:
+      type: object
+      required:
+        - name
+        - namespace
+        - status
+        - restarts
+        - node
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
+        status:
+          type: string
+        restarts:
+          type: integer
+        node:
+          type: string
+        createdAt:
+          type: ["string", "null"]
+
+    DeploymentInfo:
+      type: object
+      required:
+        - name
+        - namespace
+        - desiredReplicas
+        - readyReplicas
+        - availableReplicas
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
+        desiredReplicas:
+          type: integer
+        readyReplicas:
+          type: integer
+        availableReplicas:
+          type: integer
+        updatedAt:
+          type: ["string", "null"]
+
+    ServiceHealth:
+      type: object
+      required:
+        - name
+        - url
+        - status
+        - httpStatus
+        - latencyMs
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        status:
+          type: string
+        httpStatus:
+          type: integer
+        latencyMs:
+          type: number
+
+    ClusterMetrics:
+      type: object
+      required:
+        - cpuUsageCores
+        - cpuUsagePercent
+        - memoryUsagePercent
+        - desiredReplicas
+        - availableReplicas
+      properties:
+        cpuUsageCores:
+          type: number
+        cpuUsagePercent:
+          type: number
+        memoryUsagePercent:
+          type: number
+        desiredReplicas:
+          type: integer
+        availableReplicas:
+          type: integer
+
+    NodeMetrics:
+      type: object
+      required:
+        - node
+        - cpuUsagePercent
+        - memoryUsagePercent
+      properties:
+        node:
+          type: string
+        cpuUsagePercent:
+          type: number
+        memoryUsagePercent:
+          type: number
+
+    PodPhaseMetrics:
+      type: object
+      required:
+        - running
+        - pending
+        - failed
+        - succeeded
+        - unknown
+      properties:
+        running:
+          type: number
+        pending:
+          type: number
+        failed:
+          type: number
+        succeeded:
+          type: number
+        unknown:
+          type: number
+
+    PodRestartInfo:
+      type: object
+      required:
+        - namespace
+        - pod
+        - restarts
+      properties:
+        namespace:
+          type: string
+        pod:
+          type: string
+        restarts:
+          type: number
+
+    ArgoCdApp:
+      type: object
+      required:
+        - name
+        - syncStatus
+        - healthStatus
+        - repoUrl
+        - targetRevision
+        - destinationNamespace
+      properties:
+        name:
+          type: string
+        syncStatus:
+          type: string
+        healthStatus:
+          type: string
+        repoUrl:
+          type: string
+        targetRevision:
+          type: string
+        destinationNamespace:
+          type: string
+        lastSyncTime:
+          type: ["string", "null"]
+
+    LogsSummary:
+      type: object
+      required:
+        - totalErrors
+        - namespacesWithErrors
+        - topPodsWithErrors
+        - recentMessages
+      properties:
+        totalErrors:
+          type: integer
+        namespacesWithErrors:
+          type: array
+          items:
+            type: string
+        topPodsWithErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/PodErrorCount"
+        recentMessages:
+          type: array
+          items:
+            type: string
+
+    PodErrorCount:
+      type: object
+      required:
+        - pod
+        - namespace
+        - count
+      properties:
+        pod:
+          type: string
+        namespace:
+          type: string
+        count:
+          type: integer

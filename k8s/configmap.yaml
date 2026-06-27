@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: portfolio-config
+  namespace: portfolio
+data:
+  PROMETHEUS_URL: "http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090"
+  LOKI_URL: "http://loki-gateway.logging.svc.cluster.local"
+  ARGOCD_NAMESPACE: "argocd"
+  PUBLIC_EVE_URL: "https://evetools.skrin.pp.ua"
+  PUBLIC_PORTFOLIO_URL: "https://portfolio.skrin.pp.ua"
+  NODE_ENV: "production"
+  PORT: "3000"
