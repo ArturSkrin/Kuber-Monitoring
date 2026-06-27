@@ -56,7 +56,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 # Copy built frontend dist from build stage
 COPY --from=base /app/artifacts/portfolio/dist/public ./artifacts/portfolio/dist/public
-
+COPY --from=base /app/artifacts/api-server/dist ./artifacts/api-server/dist
 # Expose port
 EXPOSE 3000
 
