@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOUR_GITHUB_USERNAME/portfolio
+    repoURL: https://github.com/ArturSkrin/Kuber-Monitoring
     targetRevision: main
     path: k8s
   destination:

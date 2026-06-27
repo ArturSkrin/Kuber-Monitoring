@@ -22,7 +22,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: portfolio
-          image: ghcr.io/YOUR_GITHUB_USERNAME/portfolio:latest
+          image: ghcr.io/arturskrin/kuber-monitoring:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
