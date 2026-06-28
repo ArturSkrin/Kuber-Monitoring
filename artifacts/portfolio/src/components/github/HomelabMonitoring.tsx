@@ -21,6 +21,8 @@ const DIVIDER = "border-[#d0d7de] dark:border-[#30363d]";
 const MUTED = "text-[#59636e] dark:text-[#7d8590]";
 const PRIMARY = "text-[#1f2328] dark:text-[#e6edf3]";
 const ACCENT = "text-[#0969da] dark:text-[#2f81f7]";
+const CARD_HOVER = "transition-all duration-200 hover:-translate-y-1 hover:border-[#2ea043] dark:hover:border-[#3fb950] hover:shadow-lg hover:shadow-[#2ea043]/25 dark:hover:shadow-[#3fb950]/25";
+const STAT_CARD = "border border-[#2ea043]/40 dark:border-[#3fb950]/50 rounded-[6px] bg-white dark:bg-[#0d1117] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#2ea043] dark:hover:border-[#3fb950] hover:shadow-md hover:shadow-[#2ea043]/30 dark:hover:shadow-[#3fb950]/30";
 
 function StatusBadge({ status, text }: { status: 'success' | 'danger' | 'warning', text: string }) {
   const color = status === 'success' ? '#3fb950' : status === 'danger' ? '#f85149' : '#d29922';
@@ -82,19 +84,19 @@ export function HomelabMonitoring() {
 
       {summary && clusterMetrics && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <div className={`${BOX} p-4 text-center`}>
+          <div className={`${STAT_CARD} p-4 text-center`}>
             <div className={`text-xs ${MUTED} mb-1`}>Nodes Ready</div>
             <div className={`text-xl ${PRIMARY} font-semibold`}>{summary.nodeReadyCount}/{summary.nodeCount}</div>
           </div>
-          <div className={`${BOX} p-4 text-center`}>
+          <div className={`${STAT_CARD} p-4 text-center`}>
             <div className={`text-xs ${MUTED} mb-1`}>Pods Running</div>
             <div className={`text-xl ${PRIMARY} font-semibold`}>{summary.podRunning}/{summary.podTotal}</div>
           </div>
-          <div className={`${BOX} p-4 text-center`}>
+          <div className={`${STAT_CARD} p-4 text-center`}>
             <div className={`text-xs ${MUTED} mb-1`}>CPU Usage</div>
             <div className={`text-xl ${PRIMARY} font-semibold`}>{clusterMetrics.cpuUsagePercent.toFixed(1)}%</div>
           </div>
-          <div className={`${BOX} p-4 text-center`}>
+          <div className={`${STAT_CARD} p-4 text-center`}>
             <div className={`text-xs ${MUTED} mb-1`}>Memory Usage</div>
             <div className={`text-xl ${PRIMARY} font-semibold`}>{clusterMetrics.memoryUsagePercent.toFixed(1)}%</div>
           </div>
@@ -103,7 +105,7 @@ export function HomelabMonitoring() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Apps / Releases */}
-        <div className={`${BOX} overflow-hidden flex flex-col`}>
+        <div className={`${BOX} ${CARD_HOVER} overflow-hidden flex flex-col`}>
           <div className={HEADER}>
             <Layers className={`w-4 h-4 ${MUTED}`} />
             Apps / Releases
@@ -111,7 +113,7 @@ export function HomelabMonitoring() {
           <div className="p-4 flex-1">
             {loadingApps && !apps ? <SkeletonList /> : (
               apps?.map(app => (
-                <div key={app.name} className={`flex items-center justify-between py-3 border-b ${DIVIDER} last:border-0 group`}>
+                <div key={app.name} className={`flex items-center justify-between py-3 border-b ${DIVIDER} last:border-0 group rounded-md px-2 -mx-2 transition-colors hover:bg-[#f6f8fa] dark:hover:bg-[#161b22]`}>
                   <div className="flex flex-col gap-0.5">
                     <span className={`text-sm font-semibold ${ACCENT}`}>{app.name}</span>
                     <span className={`text-xs ${MUTED}`}>NS: {app.destinationNamespace}</span>
@@ -127,7 +129,7 @@ export function HomelabMonitoring() {
         </div>
 
         {/* Kubernetes Nodes */}
-        <div className={`${BOX} overflow-hidden flex flex-col`}>
+        <div className={`${BOX} ${CARD_HOVER} overflow-hidden flex flex-col`}>
           <div className={HEADER}>
             <Server className={`w-4 h-4 ${MUTED}`} />
             Kubernetes Nodes
@@ -137,7 +139,7 @@ export function HomelabMonitoring() {
               nodes?.map(node => {
                 const metrics = nodeMetrics?.find(m => m.node === node.name);
                 return (
-                  <div key={node.name} className={`flex flex-col gap-2 py-3 border-b ${DIVIDER} last:border-0 group`}>
+                  <div key={node.name} className={`flex flex-col gap-2 py-3 border-b ${DIVIDER} last:border-0 group rounded-md px-2 -mx-2 transition-colors hover:bg-[#f6f8fa] dark:hover:bg-[#161b22]`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-sm font-semibold ${PRIMARY}`}>{node.name}</span>
                       <StatusBadge status={node.status === 'Ready' ? 'success' : 'danger'} text={node.status} />
@@ -166,7 +168,7 @@ export function HomelabMonitoring() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Public Services */}
-        <div className={`${BOX} overflow-hidden flex flex-col`}>
+        <div className={`${BOX} ${CARD_HOVER} overflow-hidden flex flex-col`}>
           <div className={HEADER}>
             <Globe className={`w-4 h-4 ${MUTED}`} />
             Public Services
@@ -174,7 +176,7 @@ export function HomelabMonitoring() {
           <div className="p-4 flex-1">
             {!services ? <SkeletonList /> : (
               services.map(svc => (
-                <div key={svc.name} className={`flex items-center justify-between py-2 border-b ${DIVIDER} last:border-0`}>
+                <div key={svc.name} className={`flex items-center justify-between py-2 border-b ${DIVIDER} last:border-0 rounded-md px-2 -mx-2 transition-colors hover:bg-[#f6f8fa] dark:hover:bg-[#161b22]`}>
                   <div className="flex flex-col gap-0.5">
                     <a href={svc.url} target="_blank" rel="noreferrer" className={`text-sm font-semibold ${ACCENT} hover:underline`}>{svc.name}</a>
                     <span className={`text-xs ${MUTED}`}>{svc.latencyMs}ms latency</span>
@@ -190,7 +192,7 @@ export function HomelabMonitoring() {
         </div>
 
         {/* Alerts & Issues */}
-        <div className={`${BOX} overflow-hidden flex flex-col`}>
+        <div className={`${BOX} ${CARD_HOVER} overflow-hidden flex flex-col`}>
           <div className={HEADER}>
             <AlertCircle className={`w-4 h-4 ${MUTED}`} />
             Alerts & Issues
@@ -226,7 +228,7 @@ export function HomelabMonitoring() {
       </div>
 
       {/* Workloads Area */}
-      <div className={`${BOX} overflow-hidden`}>
+      <div className={`${BOX} ${CARD_HOVER} overflow-hidden`}>
         <button
           onClick={() => setShowWorkloads(!showWorkloads)}
           className="w-full bg-[#f6f8fa] hover:bg-[#eaeef2] dark:bg-[#161b22] dark:hover:bg-[#21262d] px-4 py-3 flex items-center justify-between text-sm font-semibold text-[#1f2328] dark:text-[#e6edf3] transition-colors"
