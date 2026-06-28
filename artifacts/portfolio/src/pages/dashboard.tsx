@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Header } from "@/components/dashboard/Header";
 import { ClusterSummaryStats } from "@/components/dashboard/ClusterSummaryStats";
 import { Metrics } from "@/components/dashboard/Metrics";
@@ -12,6 +13,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database } from "lucide-react";
 
 export default function Dashboard() {
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
