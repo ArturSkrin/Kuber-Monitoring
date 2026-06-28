@@ -4,6 +4,7 @@ import { TopNav } from "@/components/github/TopNav";
 import { ReadmeIntro } from "@/components/github/ReadmeIntro";
 import { PinnedRepos } from "@/components/github/PinnedRepos";
 import { HomelabMonitoring } from "@/components/github/HomelabMonitoring";
+import { HomelabTerminal } from "@/components/github/HomelabTerminal";
 
 function getInitialDark(): boolean {
   try {
@@ -46,6 +47,7 @@ export default function GithubHome() {
             <HomelabMonitoring />
           </div>
         </div>
+        <HomelabTerminal />
       </div>
     </div>
   );
