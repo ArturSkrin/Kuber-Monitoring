@@ -1,15 +1,15 @@
-import { useGetPodRestarts, useGetLogsSummary } from "@workspace/api-client-react";
+import { useGetPodRestarts, getGetPodRestartsQueryKey, useGetLogsSummary, getGetLogsSummaryQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertOctagon, Terminal } from "lucide-react";
 
 export function IssuesPanel() {
   const { data: restarts, isLoading: restartsLoading } = useGetPodRestarts({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetPodRestartsQueryKey() }
   });
   
   const { data: logs, isLoading: logsLoading } = useGetLogsSummary({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetLogsSummaryQueryKey() }
   });
 
   return (

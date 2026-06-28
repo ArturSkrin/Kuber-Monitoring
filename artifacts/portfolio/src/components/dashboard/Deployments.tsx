@@ -1,4 +1,4 @@
-import { useGetWorkloads, useGetRecentDeployments } from "@workspace/api-client-react";
+import { useGetWorkloads, getGetWorkloadsQueryKey, useGetRecentDeployments, getGetRecentDeploymentsQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,11 +6,11 @@ import { Rocket, Box } from "lucide-react";
 
 export function RecentDeployments() {
   const { data: deployments, isLoading: depsLoading, isError: depsError } = useGetRecentDeployments({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetRecentDeploymentsQueryKey() }
   });
 
   const { data: workloads, isLoading: wlLoading, isError: wlError } = useGetWorkloads({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetWorkloadsQueryKey() }
   });
 
   return (

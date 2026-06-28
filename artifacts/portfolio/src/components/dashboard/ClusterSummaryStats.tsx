@@ -1,11 +1,11 @@
-import { useGetClusterSummary } from "@workspace/api-client-react";
+import { useGetClusterSummary, getGetClusterSummaryQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Cpu, Boxes, Layers, Box } from "lucide-react";
 
 export function ClusterSummaryStats() {
   const { data: summary, isLoading, isError } = useGetClusterSummary({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetClusterSummaryQueryKey() }
   });
 
   if (isError) {

@@ -1,4 +1,4 @@
-import { useGetPublicServices } from "@workspace/api-client-react";
+import { useGetPublicServices, getGetPublicServicesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,7 +6,7 @@ import { Globe, Activity, Clock } from "lucide-react";
 
 export function PublicServices() {
   const { data: services, isLoading, isError } = useGetPublicServices({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetPublicServicesQueryKey() }
   });
 
   return (

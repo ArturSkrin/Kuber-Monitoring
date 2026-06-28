@@ -1,4 +1,4 @@
-import { useGetArgoCdApps } from "@workspace/api-client-react";
+import { useGetArgoCdApps, getGetArgoCdAppsQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,7 +6,7 @@ import { GitBranch, RefreshCw, HeartPulse } from "lucide-react";
 
 export function ArgoCdApps() {
   const { data: apps, isLoading, isError } = useGetArgoCdApps({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetArgoCdAppsQueryKey() }
   });
 
   return (

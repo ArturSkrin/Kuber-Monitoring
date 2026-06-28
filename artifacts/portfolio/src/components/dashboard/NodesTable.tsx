@@ -1,4 +1,4 @@
-import { useGetNodes } from "@workspace/api-client-react";
+import { useGetNodes, getGetNodesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,7 @@ import { Server } from "lucide-react";
 
 export function NodesTable() {
   const { data: nodes, isLoading, isError } = useGetNodes({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetNodesQueryKey() }
   });
 
   return (

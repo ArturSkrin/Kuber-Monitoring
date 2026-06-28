@@ -1,4 +1,4 @@
-import { useGetNamespaces } from "@workspace/api-client-react";
+import { useGetNamespaces, getGetNamespacesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Layers } from "lucide-react";
@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 export function NamespacesOverview() {
   const { data: namespaces, isLoading, isError } = useGetNamespaces({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetNamespacesQueryKey() }
   });
 
   return (

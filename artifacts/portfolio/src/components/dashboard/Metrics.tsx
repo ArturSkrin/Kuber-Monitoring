@@ -1,4 +1,4 @@
-import { useGetClusterMetrics, useGetNodeMetrics, useGetPodMetrics } from "@workspace/api-client-react";
+import { useGetClusterMetrics, getGetClusterMetricsQueryKey, useGetNodeMetrics, getGetNodeMetricsQueryKey, useGetPodMetrics, getGetPodMetricsQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
@@ -6,15 +6,15 @@ import { Activity } from "lucide-react";
 
 export function Metrics() {
   const { data: metrics, isLoading, isError } = useGetClusterMetrics({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetClusterMetricsQueryKey() }
   });
 
   const { data: nodeMetrics, isLoading: nodesLoading } = useGetNodeMetrics({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetNodeMetricsQueryKey() }
   });
 
   const { data: podMetrics, isLoading: podsLoading } = useGetPodMetrics({
-    query: { refetchInterval: 30000 }
+    query: { refetchInterval: 30000, queryKey: getGetPodMetricsQueryKey() }
   });
 
   if (isError) {
